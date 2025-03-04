@@ -18,14 +18,16 @@ impl HttpRequestBuilder {
         
         assert!(!host.is_empty(), "Host cannot be empty");
 
-        Self {
+        let http_request_builder = Self {
             method,
             path: path.to_string(),
             host: host.to_string(),
             port,
             version: HttpVersion::Http1_1,
             headers: HashMap::new(),
-        }
+        };
+
+        http_request_builder
     }
 
     pub fn version(mut self, version: HttpVersion) -> Self {
@@ -53,6 +55,14 @@ impl HttpRequestBuilder {
 
         write!(&mut request, "\r\n").expect("Failed to write final newline");
         request
+    }
+
+    pub fn get_host(&self) -> String {
+        format!("{}:{}", self.host, self.port)
+    }
+
+    pub fn get_http_version(&self) -> String {
+        format!("{}", self.version.as_str())
     }
 }
 
