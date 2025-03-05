@@ -2,10 +2,16 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::fs::OpenOptions;
 use std::time::Duration;
+
 use crate::http_request_builder::HttpRequestBuilder;
+use crate::progress_bar::ProgressBar;
+
+const PROGRESS_BAR_WIDTH: usize = 50;
+const PROGRESS_BAR_TOTAL: usize = 0;
 
 pub struct FileDownloader {
     base_request: HttpRequestBuilder,
+    progress_bar: ProgressBar,
     total_size: Option<usize>,
     chunk_size: usize,
     retries: usize,
@@ -16,6 +22,7 @@ impl FileDownloader {
     pub fn new(base_request: HttpRequestBuilder, chunk_size: usize, retries: usize, timeout: u64) -> Result<Self, String> {
         let file_downloader = FileDownloader {
             base_request,
+            progress_bar: ProgressBar::new(PROGRESS_BAR_TOTAL, PROGRESS_BAR_WIDTH),
             total_size: None,
             chunk_size,
             retries,
@@ -69,16 +76,17 @@ impl FileDownloader {
         Ok(size)
     }
 
-    fn fetch_chunk(&self, request: &str, start: usize, end: usize, expected_size: usize, total_size: usize) -> Result<Vec<u8>, String> {
-        let mut attempt = 0;
+    fn fetch_chunk(&self, request: &str, expected_size: usize) -> Result<Vec<u8>, String> {
+        let mut attempt = 1;
         while attempt <= self.retries {
-            println!("Requesting bytes {}-{} (attempt {})", start, end, attempt + 1);
+            self.progress_bar.print();
+            println!("(attempt {})", attempt);
 
             let response = match self.get_data(request) {
                 Ok(resp) => resp,
                 Err(e) => {
                     if attempt == self.retries {
-                        return Err(format!("Failed to get data after {} retries: {}", self.retries + 1, e));
+                        return Err(format!("Failed to get data after {} retries: {}", self.retries, e));
                     }
                     std::thread::sleep(Duration::from_millis(self.timeout));
                     attempt += 1;
@@ -96,18 +104,10 @@ impl FileDownloader {
                 ));
             }
 
-            let range_line = headers.lines()
-            .find(|line| line.starts_with("Content-Length:"))
-            .ok_or("Missing Content-Length header")?;
-
-            println!("Received: {}", range_line);
-
             let received_size = body.len();
-            let is_last_chunk = end == total_size - 1;
-            if received_size < expected_size && !is_last_chunk {
-                println!("Short chunk: got {} bytes, expected {}", received_size, expected_size);
+            if received_size < expected_size {
                 if attempt == self.retries {
-                    return Err(format!("Incomplete chunk after {} retries", self.retries + 1));
+                    return Err(format!("Incomplete chunk after {} retries", self.retries));
                 }
                 std::thread::sleep(Duration::from_millis(100));
                 attempt += 1;
@@ -133,6 +133,9 @@ impl FileDownloader {
         .map_err(|e| format!("Failed to open file: {}", e))?;
 
         let mut start = 0;
+        self.progress_bar.set_total(total_size);
+
+        self.progress_bar.update(0);
 
         while start < total_size {
             let end = (start + self.chunk_size).min(total_size);
@@ -142,13 +145,16 @@ impl FileDownloader {
             .add_header("Range", &format!("bytes={}-{}", start, end))
             .build();
 
-            let body = self.fetch_chunk(&request, start, end, expected_size, total_size)?;
+            let body = self.fetch_chunk(&request, expected_size)?;
             file.write_all(&body)
             .map_err(|e| format!("Failed to write to file: {}", e))?;
             
-            println!("Wrote {} bytes to file (range {}-{})", body.len(), start, end);
             start = end;
+
+            self.progress_bar.update(start);
         }
+
+        self.progress_bar.finish();
 
         Ok(())
     }

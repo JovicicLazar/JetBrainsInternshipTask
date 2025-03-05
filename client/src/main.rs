@@ -1,6 +1,7 @@
 mod http_request_builder;
 mod file_downloader;
 mod http_types;
+mod progress_bar;
 
 use std::io::Read;
 use std::fs::File;
@@ -23,7 +24,7 @@ fn main() {
             let mut file = File::open(filename).expect("Failed to open file");
             let mut data = Vec::new();
             file.read_to_end(&mut data).expect("Failed to read file");
-            println!("Total file size: {}", data.len());
+            println!("Total file size: {}KB", data.len() / 1024);
         }
         Err(e) => eprintln!("Download failed: {}", e),
     }
