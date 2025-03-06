@@ -12,7 +12,7 @@ use file_downloader::FileDownloader;
 use http_types::{HttpMethod, HttpVersion};
 use config::Config;
 
-const INI_FILE_PATH: &str = "../../src/client_setup.ini"; // this path, because when you build the code, you will run it from target/debug
+const INI_FILE_PATH: &str = "../../config/client_config.ini"; // this path, because when you build the code, you will run it from target/debug
 const DEFAULT_HOST: &str = "127.0.0.1";
 const DEFAULT_PATH: &str = "/";
 const DEFAULT_PORT: i32 = 8080;

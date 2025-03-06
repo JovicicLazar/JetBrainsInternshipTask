@@ -5,7 +5,7 @@ This repository contains a Rust-based file downloader client and a Python-based 
 ## Project Structure
 - **`client/`**: Rust client code (the file downloader).
 - **`server/`**: Python server code (`buggy_server.py`).
-- **`client_setup.ini`**: Configuration file for the client (place in `client/`).
+- **`client_setup.ini`**: Configuration file for the client (place in `client/config`).
 
 ## Prerequisites
 - **Rust**: Install via [rustup](https://rustup.rs/) (`rustc` and `cargo` required).
