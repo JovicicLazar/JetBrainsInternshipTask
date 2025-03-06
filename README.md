@@ -3,7 +3,6 @@
 This repository contains a Rust-based file downloader client and a Python-based buggy server. The client downloads a file from the server using HTTP range requests, with configurable settings loaded from an INI file (`client_setup.ini`).
 
 ## Project Structure
-- **`build/`**: Rust client code (the file downloader).
 - **`client/`**: Rust client code (the file downloader).
 - **`server/`**: Python server code (`buggy_server.py`).
 - **`client_setup.ini`**: Configuration file for the client (place in `client/`).
@@ -14,7 +13,7 @@ This repository contains a Rust-based file downloader client and a Python-based 
 
 ## How to Build
 
-Build the Rust client from the root directory (`JetBrainsInternshipTask`).
+Follow these steps from the root directory (`JetBrainsInternshipTask`)
 
 1. Navigate to the client directory:
    ```bash
@@ -57,7 +56,7 @@ To run the program, start the server first, then execute the client. All command
    ```bash
    ./client
    ```
-   - Loads settings from `client_setup.ini` (or defaults), downloads `downloaded_data.bin`, and computes its SHA-256 hash.
+   - Loads settings from `client_setup.ini`, downloads `downloaded_data.bin`, and computes its SHA-256 hash.
 
 #### Example `client_setup.ini`
 ```ini
@@ -71,9 +70,7 @@ chunk_size=50000
 retries=10
 timeout=1000
 ```
-The `client_setup.ini` file is located in both the `/build` and `/client/src` directories.  
-- If you **build the project**, modify the configuration file in `/client/src`.  
-- If you **don't want to build**, update the one in `/build` and run the client directly.  
+The `client_setup.ini` file is located in `/client/src` directory.
 
 
 
