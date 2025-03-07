@@ -80,7 +80,7 @@ impl Config {
             Some(value) => match value.parse::<i32>() {
                 Ok(int_value) => Some(int_value),
                 Err(_) => {
-                    println!("Value '{}' for section '{}', key '{}' is not an integer", value, section, key);
+                    println!("Value '{}' for section '{}', key '{}' is not an integer or its too large", value, section, key);
                     None
                 }
             },

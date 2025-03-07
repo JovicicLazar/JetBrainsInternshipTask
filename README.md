@@ -72,6 +72,11 @@ timeout=1000
 ```
 The `client_setup.ini` file is located in `/client/src` directory.
 
-
-
+##Expected output
+   ```bash
+   [==================================================] 100.0% (874536/874536 bytes)
+   Download completed successfully
+   Total file size: 874536 bytes
+   SHA-256 hash: c98668524fb5400df1996ec61e9c5a2fabdddf57dcd839f6f1834026a2aa8c7d
+   ```
 

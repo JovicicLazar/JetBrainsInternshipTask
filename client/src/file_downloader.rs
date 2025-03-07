@@ -8,6 +8,7 @@ use crate::progress_bar::ProgressBar;
 
 const PROGRESS_BAR_WIDTH: usize = 50;
 const PROGRESS_BAR_TOTAL: usize = 0;
+const MIN_CHUNK_SIZE: usize = 1024;
 
 // FileDownloader class that retrieves data in chunks by first fetching the total size from the server,
 // then downloading the data incrementally, chunk by chunk.
@@ -22,11 +23,17 @@ pub struct FileDownloader {
 
 impl FileDownloader {
     pub fn new(base_request: HttpRequestBuilder, chunk_size: usize, retries: usize, timeout: u64) -> Result<Self, String> {
+        let adjusted_chunk_size = if chunk_size < MIN_CHUNK_SIZE {
+            MIN_CHUNK_SIZE
+        } else {
+            chunk_size
+        };
+
         let file_downloader = FileDownloader {
             base_request,
             progress_bar: ProgressBar::new(PROGRESS_BAR_TOTAL, PROGRESS_BAR_WIDTH),
             total_size: None,
-            chunk_size,
+            chunk_size: adjusted_chunk_size,
             retries,
             timeout,
         };
@@ -78,13 +85,18 @@ impl FileDownloader {
         Ok(size)
     }
 
-    fn fetch_chunk(&self, request: &str, expected_size: usize) -> Result<Vec<u8>, String> {
+    fn fetch_chunk(&mut self, start: usize, end: usize) -> Result<(Vec<u8>, usize), String> {
         let mut attempt = 1;
+        let mut current_end = end;
         while attempt <= self.retries {
             self.progress_bar.print();
             println!("(attempt {})", attempt);
 
-            let response = match self.get_data(request) {
+            let request = self.base_request.clone()
+            .add_header("Range", &format!("bytes={}-{}", start, current_end))
+            .build();
+
+            let response = match self.get_data(&request) {
                 Ok(resp) => resp,
                 Err(e) => {
                     if attempt == self.retries {
@@ -105,9 +117,15 @@ impl FileDownloader {
                     headers.lines().next().unwrap_or("no status")
                 ));
             }
-
+            
             let received_size = body.len();
-            if received_size < expected_size {
+            if start + received_size < current_end { // if the recieved data is incomplete then make chunk_size smaller
+                self.chunk_size = self.chunk_size / 2;
+                if self.chunk_size < MIN_CHUNK_SIZE {
+                    self.chunk_size = MIN_CHUNK_SIZE;
+                }
+                current_end = current_end - self.chunk_size;
+
                 if attempt == self.retries {
                     return Err(format!("Incomplete chunk after {} retries", self.retries));
                 }
@@ -115,8 +133,7 @@ impl FileDownloader {
                 attempt += 1;
                 continue;
             }
-
-            return Ok(body.to_vec());
+            return Ok((body.to_vec(), current_end));
         }
         Err(format!("Failed to fetch chunk after {} retries", self.retries + 1))
     }
@@ -126,6 +143,12 @@ impl FileDownloader {
             Some(size) => size,
             None => self.fetch_total_size()?,
         };
+
+        if let Some(total_size) = self.total_size {
+            if self.chunk_size > total_size {
+                self.chunk_size = total_size / 2;
+            }
+        }
 
         let mut file = OpenOptions::new()
         .write(true)
@@ -141,17 +164,13 @@ impl FileDownloader {
 
         while start < total_size {
             let end = (start + self.chunk_size).min(total_size);
-            let expected_size = end - start;
+            
+            let (body, actual_end) = self.fetch_chunk(start, end)?;
 
-            let request = self.base_request.clone()
-            .add_header("Range", &format!("bytes={}-{}", start, end))
-            .build();
-
-            let body = self.fetch_chunk(&request, expected_size)?;
             file.write_all(&body)
             .map_err(|e| format!("Failed to write to file: {}", e))?;
             
-            start = end;
+            start = actual_end;
 
             self.progress_bar.update(start);
         }
