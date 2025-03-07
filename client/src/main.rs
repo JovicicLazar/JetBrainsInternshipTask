@@ -19,7 +19,7 @@ const DEFAULT_PORT: i32 = 8080;
 const DEFAULT_CHUNK_SIZE: i32 = 50_000;
 const DEFAULT_RETRIES: i32 = 10;
 const DEFAULT_TIMEOUT: i32 = 1000;
-const DOWNLOAD_FILENAME: &str = "downloaded_data.bin";
+const DEFAULT_FILENAME: &str = "downloaded_data.bin";
 
 fn main() {
     let mut config_file = Config::new();
@@ -58,6 +58,11 @@ fn main() {
         _ => DEFAULT_TIMEOUT as u64,
     };
 
+    let file_name = match config_file.get_as_string("download_file", "name") {
+        Some(file_name) =>file_name,
+        _ => DEFAULT_FILENAME.to_string(),
+    };
+
     let base_request = HttpRequestBuilder::new(HttpMethod::Get, &path, &host, port)
     .version(HttpVersion::Http1_0)
     .add_header("Connection", "close");
@@ -70,10 +75,10 @@ fn main() {
         }
     };
 
-    match downloader.download_to_file(DOWNLOAD_FILENAME) {
+    match downloader.download_to_file(&file_name) {
         Ok(()) => {
             println!("Download completed successfully");
-            let mut file = match File::open(DOWNLOAD_FILENAME) {
+            let mut file = match File::open(&file_name) {
                 Ok(file) => file,
                 Err(e) => {
                     eprintln!("Failed to open downloaded file: {}", e);
@@ -87,7 +92,7 @@ fn main() {
             }
             println!("Total file size: {} bytes", data.len());
 
-            let hash = calculate_sha256(DOWNLOAD_FILENAME);
+            let hash = calculate_sha256(&file_name);
             if !hash.is_empty() {
                 println!("SHA-256 hash: {}", hash);
             } else {

@@ -2,6 +2,9 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Read};
 
+// This is a simple INI file parser that reads an INI file and stores its contents in a HashMap.
+// It provides two retrieval functions: one for strings and one for integers, implemented specifically
+// for this project’s needs.
 #[derive(Debug)]
 pub struct Config {
     sections: HashMap<String, HashMap<String, String>>,
@@ -89,6 +92,7 @@ impl Config {
     }
 }
 
+//Tests for Config
 #[cfg(test)]
 mod tests {
     use super::*;

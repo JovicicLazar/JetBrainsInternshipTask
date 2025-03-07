@@ -2,6 +2,8 @@ use std::fmt::Write;
 use std::collections::HashMap;
 use crate::http_types::{HttpMethod, HttpVersion};
 
+// HTTP request builder designed to simplify request creation and enhance error resistance
+// throughout the process.
 #[derive(Clone)]
 pub struct HttpRequestBuilder {
     method: HttpMethod,

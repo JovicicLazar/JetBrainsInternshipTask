@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 
+//Simple progess bar implementation
 pub struct ProgressBar {
     total: usize,
     width: usize,

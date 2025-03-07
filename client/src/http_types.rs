@@ -1,3 +1,5 @@
+// Types for HttpRequestBuilder. Not all HTTP methods are implemented, as this project only requires
+// the GET method, but other methods are included here for completeness.
 #[derive(Clone)]
 #[allow(dead_code)]
 pub enum HttpMethod {

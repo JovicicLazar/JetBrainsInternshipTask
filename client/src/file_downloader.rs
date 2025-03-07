@@ -9,6 +9,8 @@ use crate::progress_bar::ProgressBar;
 const PROGRESS_BAR_WIDTH: usize = 50;
 const PROGRESS_BAR_TOTAL: usize = 0;
 
+// FileDownloader class that retrieves data in chunks by first fetching the total size from the server,
+// then downloading the data incrementally, chunk by chunk.
 pub struct FileDownloader {
     base_request: HttpRequestBuilder,
     progress_bar: ProgressBar,
