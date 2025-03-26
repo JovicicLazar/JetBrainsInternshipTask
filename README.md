@@ -58,6 +58,8 @@ To run the program, start the server first, then execute the client. All command
    ```
 
 ### Another way
+
+1. Open a new terminal and navigate to the client directory:
    ```bash
    cd client
    ```
