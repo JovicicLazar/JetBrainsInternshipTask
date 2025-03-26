@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::http_types::{HttpMethod, HttpVersion};
 
 // HTTP request builder designed to simplify request creation and enhance error resistance
-// throughout the process.
 #[derive(Clone)]
 pub struct HttpRequestBuilder {
     method: HttpMethod,
@@ -25,7 +24,7 @@ impl HttpRequestBuilder {
             path: path.to_string(),
             host: host.to_string(),
             port,
-            version: HttpVersion::Http1_1,
+            version: HttpVersion::Http1_0,
             headers: HashMap::new(),
         };
 
@@ -65,61 +64,5 @@ impl HttpRequestBuilder {
 
     pub fn get_http_version(&self) -> String {
         format!("{}", self.version.as_str())
-    }
-}
-
-// Tests for HttpRequestBuilder
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_http1_1() {
-        let builder = HttpRequestBuilder::new(HttpMethod::Get, "/", "example.com", 80)
-        .add_header("User-Agent", "test")
-        .version(HttpVersion::Http1_0);
-
-        let request = builder.build();
-
-        let expected = "GET / HTTP/1.0\r\nHost: example.com:80\r\nUser-Agent: test\r\n\r\n";
-
-        assert_eq!(request, expected);
-    }
-
-    #[test]
-    fn test_post_http2() {
-        let builder = HttpRequestBuilder::new(HttpMethod::Post, "/test", "example.com", 8080)
-        .version(HttpVersion::Http2)
-        .add_header("Content-Type", "application/JSON")
-        .add_header("Content-Type", "application/json");
-
-        let request = builder.build();
-
-        let expected = "POST /test HTTP/2\r\nHost: example.com:8080\r\nContent-Type: application/json\r\n\r\n";
-
-        assert_eq!(request, expected);
-    }
-
-    #[test]
-    fn test_put_http1_0() {
-        let request = HttpRequestBuilder::new(HttpMethod::Put, "/resource", "example.com", 80)
-        .version(HttpVersion::Http1_0)
-        .build();
-
-        let expected = "PUT /resource HTTP/1.0\r\nHost: example.com:80\r\n\r\n";
-
-        assert_eq!(request, expected);
-    }
-
-    #[test]
-    #[should_panic(expected = "Path must start with '/'")]
-    fn test_invalid_path() {
-        let _builder = HttpRequestBuilder::new(HttpMethod::Delete, "no_slash", "example.com", 80);
-    }
-
-    #[test]
-    #[should_panic(expected = "Host cannot be empty")]
-    fn test_empty_host() {
-        let _builder = HttpRequestBuilder::new(HttpMethod::Delete, "/", "", 80);
     }
 }

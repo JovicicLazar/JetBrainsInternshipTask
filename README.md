@@ -56,27 +56,16 @@ To run the program, start the server first, then execute the client. All command
    ```bash
    ./client
    ```
-   - Loads settings from `client_setup.ini`, downloads `downloaded_data.bin`, and computes its SHA-256 hash.
 
-#### Example `client_setup.ini`
-```ini
-[request]
-host=127.0.0.1
-port=8080
-path=/
+### Another way
 
-[downloader]
-chunk_size=50000
-retries=10
-timeout=1000
-```
-The `client_setup.ini` file is located in `/client/src` directory.
-
-##Expected output
+1. Open a new terminal and navigate to the client directory:
    ```bash
-   [==================================================] 100.0% (874536/874536 bytes)
-   Download completed successfully
-   Total file size: 874536 bytes
-   SHA-256 hash: c98668524fb5400df1996ec61e9c5a2fabdddf57dcd839f6f1834026a2aa8c7d
+   cd client
+   ```
+
+2. Run the client:
+   ```bash
+   cargo run
    ```
 
