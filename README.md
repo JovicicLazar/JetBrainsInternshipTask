@@ -1,11 +1,10 @@
 # JetBrains Internship Task
 
-This repository contains a Rust-based file downloader client and a Python-based buggy server. The client downloads a file from the server using HTTP range requests, with configurable settings loaded from an INI file (`client_setup.ini`).
+This repository contains a Rust-based file downloader client and a Python-based buggy server. The client downloads a file from the server using HTTP range requests.
 
 ## Project Structure
 - **`client/`**: Rust client code (the file downloader).
 - **`server/`**: Python server code (`buggy_server.py`).
-- **`client_setup.ini`**: Configuration file for the client (place in `client/config`).
 
 ## Prerequisites
 - **Rust**: Install via [rustup](https://rustup.rs/) (`rustc` and `cargo` required).
